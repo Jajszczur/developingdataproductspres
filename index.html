@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Developing Data Products</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Developing Data Products">
+  <meta name="author" content="">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Developing Data Products</h1>
+    <h2>Average Life Expectancy Visualization and Prediction</h2>
+    <p><br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Application Overview</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The &quot;Average Life Expectancy Visualization and Prediction&quot; app uses data obtained from the <a href="https://catalog.data.gov/dataset/community-health-status-indicators-chsi-to-combat-obesity-heart-disease-and-cancer">Community Health Status Indicators Dataset</a> to visualize and predict average life expectancy of communities.</p>
+
+<p>The dataset created for this application consists of the following variables:</p>
+
+<ul>
+<li>No_Exercise - the percentage of people in the community that don&#39;t exercise.</li>
+<li>Few_Fruit_Veg - the percentage of people in the community that eat few fruit and vegetables.</li>
+<li>Obesity - the percentage of people in the community that are obese.</li>
+<li>High_Blood_Pres - the percentage of people in the community that have high blood pressure.</li>
+<li>Smoker - the percentage of people in the community that smoke.</li>
+<li>Diabetes - the percentage of people in the community that suffer from diabetes.</li>
+<li>ALE - the average life expectancy of the community.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Data Preprocessing</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>First data is loaded from two files: &#39;SUMMARYMEASURESOFHEALTH.csv&#39; and &#39;RISKFACTORSANDACCESSTOCARE.csv&#39; from the Community Health Status Indicators Dataset. Next the data is merged into one dataset and subsetted to contain only variables of interest. The last step is removing missing
+values from the dataset (-1111.1 and -2222.2 are codes for missing values in the original dataset). The data is saved into a csv file.</p>
+
+<pre><code class="r">measures &lt;- read.csv(&#39;./data/SUMMARYMEASURESOFHEALTH.csv&#39;)
+risk &lt;- read.csv(&#39;./data/RISKFACTORSANDACCESSTOCARE.csv&#39;)
+all.data &lt;- merge(risk, measures)
+data &lt;- subset(all.data, select = c(&#39;No_Exercise&#39;, &#39;Few_Fruit_Veg&#39;, &#39;Obesity&#39;,
+  &#39;High_Blood_Pres&#39;, &#39;Smoker&#39;, &#39;Diabetes&#39;, &#39;ALE&#39;))
+data[data == -1111.1] &lt;- NA
+data[data == -2222.2] &lt;- NA
+data &lt;- na.omit(data)
+write.csv(data, file = &quot;./data/data.csv&quot;)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Visualization</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>In the &quot;Visualization&quot; tab the application displays the relationship between
+a selected explanatory variable and the predictor variable (ALE).
+The user selects an explanatory variable by clicking on a radio button. The
+appropriate plot is displayed. The following plot is an example plot from the app and visualizes the relationship between the percentage of people that don&#39;t exercise and average life expectancy of the community.</p>
+
+<p><img src="Rplot.png" alt="plot"></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Prediction</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>In the &quot;Prediction&quot; tab users can predict Average Life Expectancy by setting
+values of risk factors.
+The model has been fitted using the &quot;lm&quot; function. The best model was
+selected using the &quot;step&quot; function. The final model uses No_Exercise, Obesity, High_Blood_Pres, Smoker and Diabetes as predictors. The Few_Fruit_Veg 
+is not significant and thus is not used in the model.</p>
+
+<pre><code class="r">max.model &lt;- lm(ALE ~ ., data = data)
+model &lt;- step(max.model, data = data, trace=0)
+model$coefficients
+</code></pre>
+
+<pre><code>##     (Intercept)     No_Exercise         Obesity High_Blood_Pres 
+##     84.90372205     -0.08814167     -0.06799012     -0.02894685 
+##          Smoker        Diabetes 
+##     -0.10846757     -0.14089844
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Application Overview'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Data Preprocessing'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Visualization'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Prediction'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
